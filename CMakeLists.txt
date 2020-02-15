@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 set(CMAKE_TOOLCHAIN_FILE /home/jianjun/workspace/cross-compiling/toolchains/linux-gcc-4.9-x86_64-toolchain.cmake)
 
-project(remote_detector C CXX)
+project(remote_predictor C CXX)
 
 
 find_package(grpc)
@@ -27,4 +27,4 @@ set_target_properties(remote_predictor
 
 
 add_executable(predict_server server/Predictor.cpp ${SRC_FILES})
-target_link_libraries(predict_server ${grpc_LIBRARIES} -pthread)
+target_link_libraries(predict_server ${grpc_LIBRARIES} ${MNN_LIBRARIES} -pthread)
