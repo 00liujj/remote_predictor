@@ -110,7 +110,7 @@ public:
 void PredictionServiceImpl::Init(const std::string& config_path)
 {
     std::shared_ptr<MNNPredictor> pred(new MNNPredictor());
-    pred->init("", "");
+    pred->init("", "../ssd-model/demo.mnn");
     predictors_["MNN"] = pred;
 }
 
@@ -136,6 +136,8 @@ int main(int argc, char *argv[])
 
     std::string server_address("0.0.0.0:8051");
     PredictionServiceImpl service;
+
+    service.Init("");
 
     grpc::ServerBuilder builder;
     // Listen on the given address without any authentication mechanism.
