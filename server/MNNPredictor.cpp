@@ -59,6 +59,7 @@ int MNNPredictor::init(const std::string &cfg, const std::string &weights) {
     config.numThread = 4;
 
     session_ = net_->createSession(config);
+    return 0;
 }
 
 int MNNPredictor::predict(const ArgumentMap &input, ArgumentMap *output) {
@@ -92,9 +93,11 @@ int MNNPredictor::predict(const ArgumentMap &input, ArgumentMap *output) {
         serving::TensorProto& rpc_tensor = (*output)[name];
         copyMNNTensor2TensorProto(*mnn_tensor, &rpc_tensor);
     }
+    return 0;
 }
 
 int MNNPredictor::release() {
     net_->releaseSession(session_);
     net_.reset();
+    return 0;
 }

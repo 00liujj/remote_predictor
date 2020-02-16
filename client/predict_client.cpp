@@ -79,14 +79,16 @@ int main(int argc, char *argv[])
         /// remote call Predict
         PredictResponse response;
         cv::TickMeter tm;
+        grpc::Status status;
         {
             tm.start();
-            stub->Predict(&context, request, &response);
+            status = stub->Predict(&context, request, &response);
             tm.stop();
         }
+        std::cout << "the status code " << status.error_code() << ", message " << status.error_message() << std::endl;
 
         /// postprocess output
-        {
+        if (status.ok()) {
             auto iter = response.outputs().find("detection_out");
             if (iter != response.outputs().end()) {
                 const TensorProto& tpout = iter->second;

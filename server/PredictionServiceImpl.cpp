@@ -13,7 +13,6 @@ grpc::Status PredictionServiceImpl::Predict(
         const serving::PredictRequest *request,
         serving::PredictResponse *response)
 {
-    int ret = -1;
     std::string name = request->model_spec().name();
     auto iter = predictors_.find(name);
 
@@ -21,7 +20,12 @@ grpc::Status PredictionServiceImpl::Predict(
 
     if (iter != predictors_.end()) {
         std::shared_ptr<Predictor> pred = iter->second;
-        ret = pred->predict(request->inputs(), response->mutable_outputs());
+        int ret = pred->predict(request->inputs(), response->mutable_outputs());
+        if (ret != 0) {
+           return grpc::Status(grpc::UNAVAILABLE, "predictor " + name + " error");
+        }
+    } else {
+        return grpc::Status(grpc::UNAVAILABLE, "can not find predictor with name " + name);
     }
 
     return grpc::Status::OK;
