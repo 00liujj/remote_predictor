@@ -78,8 +78,11 @@ int main(int argc, char *argv[])
 
         /// remote call Predict
         PredictResponse response;
+        cv::TickMeter tm;
         {
+            tm.start();
             stub->Predict(&context, request, &response);
+            tm.stop();
         }
 
         /// postprocess output
@@ -88,7 +91,7 @@ int main(int argc, char *argv[])
             if (iter != response.outputs().end()) {
                 const TensorProto& tpout = iter->second;
                 int nboxes = tpout.tensor_shape().dim(2).size();
-                printf("detection output: nboxes %d\n", nboxes);
+                printf("detection output: nboxes %d, time %.2f ms\n", nboxes, tm.getTimeMilli());
 
                 for (int b=0; b<nboxes; b++) {
                     const float* p = tpout.float_val().data() + b * 6;
