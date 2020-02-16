@@ -9,6 +9,7 @@ find_package(grpc)
 find_package(MNN)
 find_package(OpenCV)
 
+set(CMAKE_BUILD_TYPE Debug)
 
 add_definitions(-std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0)
 

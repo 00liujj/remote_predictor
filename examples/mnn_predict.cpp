@@ -56,12 +56,31 @@ int main(int argc, char *argv[])
         cv::Mat rszImage;
         cv::resize(mat, rszImage, cv::Size(netW, netH));
 
+        //cv::cvtColor(rszImage, rszImage, CV_BGR2RGB);
+
+
         cv::Mat inImage;
+#if 1
+        inImage.create(rszImage.size(), CV_32FC3);
+        int C = inImage.channels();
+        int H = inImage.rows;
+        int W = inImage.cols;
+        uchar* src_ptr = rszImage.data;
+        float* dst_ptr = (float*)inImage.data;
+        for (int c=0; c<C; c++) {
+            for (int h=0; h<H; h++) {
+                for (int w=0; w<W; w++) {
+                    dst_ptr[c*H*W+h*W+w] = float(src_ptr[h*W*C+w*C+c]) / 255.f;
+                    //dst_ptr[h*W*C+w*C+c] = float(src_ptr[h*W*C+w*C+c]) / 255.f;
+                }
+            }
+        }
+#else
         rszImage.convertTo(inImage, CV_32F, 1.f/255.f);
+#endif
 
-        //cv::cvtColor(inImage, inImage, CV_BGR2RGB);
 
-        Tensor inputTensorUser(inputTensor, Tensor::DimensionType::TENSORFLOW);
+        Tensor inputTensorUser(inputTensor, Tensor::DimensionType::CAFFE);
         memcpy(inputTensorUser.host<float>(), inImage.data, sizeof(float)*netH*netW*netC);
 
 

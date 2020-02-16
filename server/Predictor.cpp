@@ -45,7 +45,12 @@ public:
             length *= rpc.tensor_shape().dim(i).size();
         }
 
-        memcpy(mnn->host<float>(), rpc.float_val().data(), length*sizeof(float));
+        Tensor buff(mnn, Tensor::DimensionType::CAFFE);
+
+        memcpy(buff.host<float>(), rpc.float_val().data(), length*sizeof(float));
+
+        mnn->copyFromHostTensor(&buff);
+
         return 0;
     }
 
@@ -61,14 +66,18 @@ public:
             rpc->mutable_tensor_shape()->add_dim()->set_size(d);
         }
         rpc->mutable_float_val()->Resize(length, 0);
-        memcpy(rpc->mutable_float_val()->mutable_data(), mnn.host<float>(), length*sizeof(float));
+
+        Tensor buff(&mnn, Tensor::DimensionType::CAFFE);
+        mnn.copyToHostTensor(&buff);
+
+        memcpy(rpc->mutable_float_val()->mutable_data(), buff.host<float>(), length*sizeof(float));
         return 0;
     }
 
 
     int predict(const ArgumentMap &input, ArgumentMap *output) {
 
-
+        printf("call the mnn predict\n");
         /// copy input to mnn
         auto mnn_input = net_->getSessionInputAll(session_);
 
@@ -122,6 +131,9 @@ grpc::Status PredictionServiceImpl::Predict(
     int ret = -1;
     std::string name = request->model_spec().name();
     auto iter = predictors_.find(name);
+
+    std::cout << "client call Predict\n";
+
     if (iter != predictors_.end()) {
         std::shared_ptr<Predictor> pred = iter->second;
         ret = pred->predict(request->inputs(), response->mutable_outputs());

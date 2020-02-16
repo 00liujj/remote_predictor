@@ -3,6 +3,7 @@
 #include <memory>
 
 
+
 struct RemoteInfo {
     int init(const std::string& ipaddr, int port);
     std::string ipaddr;

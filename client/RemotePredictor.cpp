@@ -41,19 +41,40 @@ int RemotePredictor::predict(int w, int h, int c, void *data)
 {
     PredictRequest request;
 
+    request.mutable_model_spec()->set_name("MNN");
     ArgumentMap* am = request.mutable_inputs();
 
     am->clear();
-    TensorProto& tp = (*am)["input"];
+    TensorProto& tp = (*am)["data"];
     tp.set_dtype(serving::DT_FLOAT);
     tp.mutable_tensor_shape()->add_dim()->set_size(1);
     tp.mutable_tensor_shape()->add_dim()->set_size(c);
     tp.mutable_tensor_shape()->add_dim()->set_size(h);
     tp.mutable_tensor_shape()->add_dim()->set_size(w);
-    memcpy(tp.mutable_float_val()->mutable_data(), data, sizeof(float)*c*h*w);
+    int64_t length = c*h*w;
+    tp.mutable_float_val()->Resize(length, 0);
+    memcpy(tp.mutable_float_val()->mutable_data(), data, sizeof(float)*length);
 
     PredictResponse response;
     impl_->stub->Predict(&impl_->context, request, &response);
+
+
+
+    auto iter = response.outputs().find("detection_out");
+    if (iter != response.outputs().end()) {
+        const TensorProto& tpout = iter->second;
+        int nboxes = tpout.tensor_shape().dim(2).size();
+        printf("detection output: nboxes %d\n", nboxes);
+
+        for (int b=0; b<nboxes; b++) {
+            const float* p = tpout.float_val().data() + b * 6;
+            printf("box %d, label %d, score %f, bbox %f %f %f %f\n",
+                   b, (int)p[0], p[1], p[2], p[3], p[4], p[5]);
+        }
+    } else {
+        printf("can not find detection_out\n");
+    }
+
 
 }
 
