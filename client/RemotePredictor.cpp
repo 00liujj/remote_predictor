@@ -29,16 +29,36 @@ RemotePredictor::~RemotePredictor() {
 
 int RemotePredictor::init(const RemoteInfo &ri, const std::string &id)
 {
-    std::string target = ri.ipaddr + std::to_string(ri.port);
+    std::string target = ri.ipaddr + ":" + std::to_string(ri.port);
     impl_->channel = grpc::CreateChannel(target, grpc::InsecureChannelCredentials());
     impl_->stub = PredictionService::NewStub(impl_->channel);
 }
 
-int RemotePredictor::predict(int w, int h, int c, void *data, int len, std::function<void ()> callback)
+
+typedef google::protobuf::Map<std::string, serving::TensorProto> ArgumentMap;
+
+int RemotePredictor::predict(int w, int h, int c, void *data)
 {
     PredictRequest request;
+
+    ArgumentMap* am = request.mutable_inputs();
+
+    am->clear();
+    TensorProto& tp = (*am)["input"];
+    tp.set_dtype(serving::DT_FLOAT);
+    tp.mutable_tensor_shape()->add_dim()->set_size(1);
+    tp.mutable_tensor_shape()->add_dim()->set_size(c);
+    tp.mutable_tensor_shape()->add_dim()->set_size(h);
+    tp.mutable_tensor_shape()->add_dim()->set_size(w);
+    memcpy(tp.mutable_float_val()->mutable_data(), data, sizeof(float)*c*h*w);
+
     PredictResponse response;
     impl_->stub->Predict(&impl_->context, request, &response);
+
+}
+
+int RemotePredictor::release()
+{
 
 }
 

@@ -14,7 +14,7 @@ public:
     RemotePredictor();
     ~RemotePredictor();
     int init(const RemoteInfo& ri, const std::string& id);
-    int predict(int w, int h, int c, void* data, int len, std::function<void()> callback);
+    int predict(int w, int h, int c, void* data);
     int release();
 protected:
     struct Impl;

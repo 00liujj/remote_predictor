@@ -66,7 +66,7 @@ public:
     }
 
 
-    int predict(const ArgrmentMap &input, ArgrmentMap *output) {
+    int predict(const ArgumentMap &input, ArgumentMap *output) {
 
 
         /// copy input to mnn
@@ -90,15 +90,11 @@ public:
         /// copy mnn to output
         auto mnn_output = net_->getSessionOutputAll(session_);
 
+        output->clear();
         for (auto& it : mnn_output) {
             std::string name = it.first;
-            auto iter = output->find(name);
-            if (iter == output->end()) {
-                std::cout << "can not find mnn output " << name << " in remote output" << std::endl;
-                return -1;
-            }
             Tensor* mnn_tensor = it.second;
-            serving::TensorProto& rpc_tensor = iter->second;
+            serving::TensorProto& rpc_tensor = (*output)[name];
             copyMNNTensor2TensorProto(*mnn_tensor, &rpc_tensor, true);
         }
     }
@@ -123,14 +119,14 @@ grpc::Status PredictionServiceImpl::Predict(
         const serving::PredictRequest *request,
         serving::PredictResponse *response)
 {
+    int ret = -1;
     std::string name = request->model_spec().name();
     auto iter = predictors_.find(name);
     if (iter != predictors_.end()) {
         std::shared_ptr<Predictor> pred = iter->second;
-        int ret = pred->predict(request->inputs(), response->mutable_outputs());
-    } else {
-
+        ret = pred->predict(request->inputs(), response->mutable_outputs());
     }
+
     return grpc::Status::OK;
 }
 

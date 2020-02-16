@@ -6,8 +6,8 @@ project(remote_predictor C CXX)
 
 
 find_package(grpc)
-
 find_package(MNN)
+find_package(OpenCV)
 
 
 add_definitions(-std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0)
@@ -24,6 +24,11 @@ target_link_libraries(remote_predictor ${grpc_LIBRARIES} -pthread)
 set_target_properties(remote_predictor
     PROPERTIES LINK_FLAGS "-Wl,-z,defs"
 )
+
+add_executable(remote_test client/main.cpp)
+target_link_libraries(remote_test remote_predictor ${OpenCV_LIBS})
+target_include_directories(remote_test PUBLIC ${OpenCV_INCLUDE_DIR})
+
 
 
 add_executable(predict_server server/Predictor.cpp ${SRC_FILES})
