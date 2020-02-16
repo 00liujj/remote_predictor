@@ -15,25 +15,36 @@ add_definitions(-std=c++11 -D_GLIBCXX_USE_CXX11_ABI=0)
 
 INCLUDE_DIRECTORIES(${grpc_INCLUDES} ${MNN_INCLUDES} ${OpenCV_INCLUDE_DIR} .)
 
-file(GLOB SRC_FILES
+file(GLOB PROTO_SRC_FILES
   proto/*.cc
 )
 
-
-add_library(remote_predictor SHARED client/RemotePredictor.cpp ${SRC_FILES})
-target_link_libraries(remote_predictor ${grpc_LIBRARIES} -pthread)
-set_target_properties(remote_predictor
-    PROPERTIES LINK_FLAGS "-Wl,-z,defs"
+file (GLOB CLIENT_SRC_FILES
+  client/RemotePredictor.cpp
 )
 
-add_executable(remote_test client/main.cpp)
-target_link_libraries(remote_test remote_predictor ${OpenCV_LIBS})
+file (GLOB SERVER_SRC_FILES
+  server/Predictor.cpp
+  server/MNNPredictor.cpp
+  server/PredictionServiceImpl.cpp
+)
+
+# client
+add_library(client ${CLIENT_SRC_FILES} ${PROTO_SRC_FILES})
+target_link_libraries(client ${grpc_LIBRARIES} -pthread)
+
+add_executable(predict_client client/predict_client.cpp)
+target_link_libraries(predict_client client ${OpenCV_LIBS})
 
 
+## server
+add_library(server ${SERVER_SRC_FILES} ${PROTO_SRC_FILES})
+target_link_libraries(server ${grpc_LIBRARIES} ${MNN_LIBRARIES} -pthread)
 
-add_executable(predict_server server/Predictor.cpp ${SRC_FILES})
-target_link_libraries(predict_server ${grpc_LIBRARIES} ${MNN_LIBRARIES} -pthread)
+add_executable(predict_server server/predict_server.cpp)
+target_link_libraries(predict_server server)
 
 
+## demo
 add_executable(mnn_predict examples/mnn_predict.cpp)
 target_link_libraries(mnn_predict ${MNN_LIBRARIES} ${OpenCV_LIBS})

@@ -1,4 +1,3 @@
-
 #include <grpc/grpc.h>
 #include <grpcpp/grpcpp.h>
 #include "proto/predict.pb.h"
