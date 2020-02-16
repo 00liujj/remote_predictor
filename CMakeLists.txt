@@ -34,5 +34,5 @@ add_executable(predict_server server/Predictor.cpp ${SRC_FILES})
 target_link_libraries(predict_server ${grpc_LIBRARIES} ${MNN_LIBRARIES} -pthread)
 
 
-add_executable(mnnpredict examples/mnnpredict.cpp)
-target_link_libraries(mnnpredict ${MNN_LIBRARIES} ${OpenCV_LIBS})
+add_executable(mnn_predict examples/mnn_predict.cpp)
+target_link_libraries(mnn_predict ${MNN_LIBRARIES} ${OpenCV_LIBS})

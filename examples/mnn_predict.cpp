@@ -10,7 +10,7 @@ int main(int argc, char *argv[])
     using namespace MNN;
 
     if (argc < 3) {
-        MNN_PRINT("Usage: ./mobilenetTest.out model.mnn input.jpg [word.txt]\n");
+        printf("Usage: %s model.mnn {input.jpg|input.mp4}\n", argv[0]);
         return 0;
     }
     std::shared_ptr<Interpreter> net(Interpreter::createFromFile(argv[1]));
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 
             for (int b=0; b<nboxes; b++) {
                 float* p = out.host<float>() + b * out.width();
-                printf("box %d, label %d score %f bbox %f %f %f %f\n",
+                printf("box %d, label %d, score %f, bbox %f %f %f %f\n",
                        b, (int)p[0], p[1], p[2], p[3], p[4], p[5]);
 
                 // draw
